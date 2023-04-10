@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserver.js';
+import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserver';
 
 /**
  * Client for GeoServer "Reset/Reload" to clear internal caches and reload
@@ -8,13 +8,16 @@ import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserv
  * @module ResetReloadClient
  */
 export default class ResetReloadClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST ResetReloadClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -31,7 +34,6 @@ export default class ResetReloadClient {
   async reset () {
     const url = this.url + 'reset';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth
@@ -55,7 +57,6 @@ export default class ResetReloadClient {
   async reload () {
     const url = this.url + 'reload';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth

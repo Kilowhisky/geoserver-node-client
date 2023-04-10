@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
-import AboutClient from './about.js'
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
+import AboutClient from './about'
 
 /**
  * Client for GeoServer namespace
@@ -8,13 +8,16 @@ import AboutClient from './about.js'
  * @module NamespaceClient
  */
 export default class NamespaceClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST NamespaceClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -24,11 +27,10 @@ export default class NamespaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object describing the namespace
+   * @returns {Promise<Object>} An object describing the namespace
    */
-  async getAll () {
+  async getAll (): Promise<object> {
     const response = await fetch(this.url + 'namespaces.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -49,9 +51,9 @@ export default class NamespaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {String} The name of the created namespace
+   * @returns {Promise<string>} The name of the created namespace
    */
-  async create (prefix, uri) {
+  async create (prefix: string, uri: string): Promise<string> {
     const body = {
       namespace: {
         prefix: prefix,
@@ -60,7 +62,6 @@ export default class NamespaceClient {
     };
 
     const response = await fetch(this.url + 'namespaces', {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -84,11 +85,10 @@ export default class NamespaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object describing the namespace or undefined if it cannot be found
+   * @returns {Promise<Object>} An object describing the namespace or undefined if it cannot be found
    */
-  async get (name) {
+  async get (name: string): Promise<object> {
     const response = await fetch(this.url + 'namespaces/' + name + '.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -115,9 +115,8 @@ export default class NamespaceClient {
    *
    * @throws Error if request fails
    */
-  async delete (name) {
+  async delete (name: string) {
     const response = await fetch(this.url + 'namespaces/' + name, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth

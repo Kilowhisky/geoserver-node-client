@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserver.js';
+import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserver';
 
 /**
  * Client for GeoServer "about" endpoint
@@ -7,13 +7,16 @@ import { GeoServerResponseError, getGeoServerResponseText } from './util/geoserv
  * @module AboutClient
  */
 export default class AboutClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST AboutClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -23,12 +26,11 @@ export default class AboutClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} The version of GeoServer
+   * @returns {Promise<object>} The version of GeoServer
    */
-  async getVersion () {
+  async getVersion (): Promise<object> {
     const url = this.url + 'about/version.json';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -45,9 +47,9 @@ export default class AboutClient {
   /**
    * Checks if the configured GeoServer REST connection exists.
    *
-   * @returns {Boolean} If the connection exists
+   * @returns {Promise<boolean>} If the connection exists
    */
-  async exists () {
+  async exists (): Promise<boolean> {
     let versionInfo;
     try {
       versionInfo = await this.getVersion();

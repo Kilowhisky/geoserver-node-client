@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
-import fs from 'fs';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
-import AboutClient from './about.js'
+import * as fs from 'fs';
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
+import AboutClient from './about'
 
 /**
  * Client for GeoServer data stores
@@ -9,13 +9,16 @@ import AboutClient from './about.js'
  * @module DatastoreClient
  */
 export default class DatastoreClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST DatastoreClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -25,9 +28,9 @@ export default class DatastoreClient {
    *
    * @param {String} workspace The workspace to get DataStores for
    *
-   * @returns {Object} An object containing store details
+   * @returns {Promise<Object>} An object containing store details
    */
-  async getDataStores (workspace) {
+  async getDataStores (workspace: string): Promise<object> {
     return this.getStores(workspace, 'datastores');
   }
 
@@ -36,9 +39,9 @@ export default class DatastoreClient {
    *
    * @param {String} workspace The workspace to get CoverageStores for
    *
-   * @returns {Object} An object containing store details
+   * @returns {Promise<Object>} An object containing store details
    */
-  async getCoverageStores (workspace) {
+  async getCoverageStores (workspace: string): Promise<object> {
     return this.getStores(workspace, 'coveragestores');
   }
 
@@ -47,9 +50,9 @@ export default class DatastoreClient {
    *
    * @param {String} workspace The workspace to get WmsStores for
    *
-   * @returns {Object} An object containing store details
+   * @returns {Promise<Object>} An object containing store details
    */
-  async getWmsStores (workspace) {
+  async getWmsStores (workspace: string): Promise<object> {
     return this.getStores(workspace, 'wmsstores');
   }
 
@@ -58,9 +61,9 @@ export default class DatastoreClient {
    *
    * @param {String} workspace The workspace to get WmtsStores for
    *
-   * @returns {Object} An object containing store details
+   * @returns {Promise<Object>} An object containing store details
    */
-  async getWmtsStores (workspace) {
+  async getWmtsStores (workspace: string): Promise<object> {
     return this.getStores(workspace, 'wmtsstores');
   }
 
@@ -72,12 +75,11 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    * @private
    */
-  async getStores (workspace, storeType) {
+  async getStores (workspace: string, storeType: string): Promise<object> {
     const response = await fetch(this.url + 'workspaces/' + workspace + '/' + storeType + '.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -96,9 +98,9 @@ export default class DatastoreClient {
    * @param {String} workspace The workspace to search DataStore in
    * @param {String} dataStore DataStore name
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    */
-  async getDataStore (workspace, dataStore) {
+  async getDataStore (workspace: string, dataStore: string): Promise<object> {
     return this.getStore(workspace, dataStore, 'datastores');
   }
 
@@ -108,9 +110,9 @@ export default class DatastoreClient {
    * @param {String} workspace The workspace to search CoverageStore in
    * @param {String} covStore CoverageStore name
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    */
-  async getCoverageStore (workspace, covStore) {
+  async getCoverageStore (workspace: string, covStore: string): Promise<object> {
     return this.getStore(workspace, covStore, 'coveragestores');
   }
 
@@ -120,10 +122,10 @@ export default class DatastoreClient {
    * @param {String} workspace The workspace to search WmsStore in
    * @param {String} wmsStore WmsStore name
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    *
    */
-  async getWmsStore (workspace, wmsStore) {
+  async getWmsStore (workspace: string, wmsStore: string): Promise<object> {
     return this.getStore(workspace, wmsStore, 'wmsstores');
   }
 
@@ -133,9 +135,9 @@ export default class DatastoreClient {
    * @param {String} workspace The workspace to search WmtsStore in
    * @param {String} wmtsStore WmtsStore name
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    */
-  async getWmtsStore (workspace, wmtsStore) {
+  async getWmtsStore (workspace: string, wmtsStore: string): Promise<object> {
     return this.getStore(workspace, wmtsStore, 'wmtsstores');
   }
 
@@ -148,13 +150,12 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object containing store details or undefined if it cannot be found
+   * @returns {Promise<Object>} An object containing store details or undefined if it cannot be found
    * @private
    */
-  async getStore (workspace, storeName, storeType) {
+  async getStore (workspace: string, storeName: string, storeType: string): Promise<object> {
     const url = this.url + 'workspaces/' + workspace + '/' + storeType + '/' + storeName + '.json';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -188,9 +189,9 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    *
-   * @returns {String} The successful response text
+   * @returns {Promise<String>} The successful response text
    */
-  async createGeotiffFromFile (workspace, coverageStore, layerName, layerTitle, filePath) {
+  async createGeotiffFromFile (workspace: string, coverageStore: string, layerName: string, layerTitle: string, filePath: string): Promise<string> {
     const lyrTitle = layerTitle || layerName;
     const stats = fs.statSync(filePath);
     const fileSizeInBytes = stats.size;
@@ -200,12 +201,11 @@ export default class DatastoreClient {
         coverageStore + '/file.geotiff';
     url += '?filename=' + lyrTitle + '&coverageName=' + layerName;
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'PUT',
       headers: {
         Authorization: this.auth,
         'Content-Type': 'image/tiff',
-        'Content-length': fileSizeInBytes
+        'Content-length': fileSizeInBytes.toString()
       },
       body: readStream
     });
@@ -234,7 +234,7 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async createPostgisStore (workspace, namespaceUri, dataStore, pgHost, pgPort, pgUser, pgPassword, pgSchema, pgDb, exposePk) {
+  async createPostgisStore (workspace: string, namespaceUri: string, dataStore: string, pgHost: string, pgPort: number, pgUser: string, pgPassword: string, pgSchema: string, pgDb: string, exposePk: boolean) {
     const body = {
       dataStore: {
         name: dataStore,
@@ -288,7 +288,6 @@ export default class DatastoreClient {
 
     const url = this.url + 'workspaces/' + workspace + '/datastores';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -319,14 +318,13 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    *
-   * @returns {String} The response text
+   * @returns {Promise<String>} The response text
    */
-  async createImageMosaicStore (workspace, coverageStore, zipArchivePath) {
+  async createImageMosaicStore (workspace: string, coverageStore: string, zipArchivePath: string): Promise<string> {
     const readStream = fs.createReadStream(zipArchivePath);
 
     const url = this.url + 'workspaces/' + workspace + '/coveragestores/' + coverageStore + '/file.imagemosaic';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'PUT',
       headers: {
         Authorization: this.auth,
@@ -341,7 +339,7 @@ export default class DatastoreClient {
     }
 
     return response.text();
-  };
+  }
 
   /**
    * Creates a WMS based data store.
@@ -352,7 +350,7 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async createWmsStore (workspace, dataStore, wmsCapabilitiesUrl) {
+  async createWmsStore (workspace: string, dataStore: string, wmsCapabilitiesUrl: string) {
     const body = {
       wmsStore: {
         name: dataStore,
@@ -363,7 +361,6 @@ export default class DatastoreClient {
 
     const url = this.url + 'workspaces/' + workspace + '/wmsstores';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -387,7 +384,7 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async createWmtsStore (workspace, dataStore, wmtsCapabilitiesUrl) {
+  async createWmtsStore (workspace: string, dataStore: string, wmtsCapabilitiesUrl: string) {
     const body = {
       wmtsStore: {
         name: dataStore,
@@ -398,7 +395,6 @@ export default class DatastoreClient {
 
     const url = this.url + 'workspaces/' + workspace + '/wmtsstores';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -424,7 +420,7 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async createWfsStore (workspace, dataStore, wfsCapabilitiesUrl, namespaceUrl, useHttpConnectionPooling) {
+  async createWfsStore (workspace: string, dataStore: string, wfsCapabilitiesUrl: string, namespaceUrl: string, useHttpConnectionPooling = true) {
     const body = {
       dataStore: {
         name: dataStore,
@@ -441,7 +437,7 @@ export default class DatastoreClient {
             },
             {
               '@key': 'WFSDataStoreFactory:USE_HTTP_CONNECTION_POOLING',
-              $: useHttpConnectionPooling !== false ? 'true' : 'false'
+              $: useHttpConnectionPooling
             }
           ]
         }
@@ -450,7 +446,6 @@ export default class DatastoreClient {
 
     const url = this.url + 'workspaces/' + workspace + '/datastores';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -469,17 +464,16 @@ export default class DatastoreClient {
    * Deletes a data store.
    *
    * @param {String} workspace The workspace where the data store is in
-   * @param {String} coverageStore Name of data store to delete
+   * @param {String} dataStore Name of data store (coveragestore) to delete
    * @param {String} recurse Flag to enable recursive deletion
    *
    * @throws Error if request fails
    */
-  async deleteDataStore (workspace, dataStore, recurse) {
+  async deleteDataStore (workspace: string, dataStore: string, recurse: string) {
     let url = this.url + 'workspaces/' + workspace + '/datastores/' + dataStore;
     url += '?recurse=' + recurse;
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth
@@ -503,12 +497,11 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async deleteCoverageStore (workspace, coverageStore, recurse) {
+  async deleteCoverageStore (workspace: string, coverageStore: string, recurse: string) {
     let url = this.url + 'workspaces/' + workspace + '/coveragestores/' + coverageStore;
     url += '?recurse=' + recurse;
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth
@@ -537,7 +530,7 @@ export default class DatastoreClient {
    *
    * @throws Error if request fails
    */
-  async createGpkgStore (workspace, dataStore, gpkgPath) {
+  async createGpkgStore (workspace: string, dataStore: string, gpkgPath: string) {
     const body = {
       dataStore: {
         name: dataStore,
@@ -559,7 +552,6 @@ export default class DatastoreClient {
 
     const url = this.url + 'workspaces/' + workspace + '/datastores';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,

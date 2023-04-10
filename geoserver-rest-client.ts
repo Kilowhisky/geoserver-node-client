@@ -1,15 +1,15 @@
-import LayerClient from './src/layer.js';
-import StyleClient from './src/style.js';
-import WorkspaceClient from './src/workspace.js';
-import DatastoreClient from './src/datastore.js';
-import ImageMosaicClient from './src/imagemosaic.js';
-import SecurityClient from './src/security.js';
-import SettingsClient from './src/settings.js';
-import NamespaceClient from './src/namespace.js';
-import AboutClient from './src/about.js';
-import ResetReloadClient from './src/reset-reload.js';
+import LayerClient from './src/layer';
+import StyleClient from './src/style';
+import WorkspaceClient from './src/workspace';
+import DatastoreClient from './src/datastore';
+import ImageMosaicClient from './src/imagemosaic';
+import SecurityClient from './src/security';
+import SettingsClient from './src/settings';
+import NamespaceClient from './src/namespace';
+import AboutClient from './src/about';
+import ResetReloadClient from './src/reset-reload';
 
-export { GeoServerResponseError } from './src/util/geoserver.js'
+export { GeoServerResponseError } from './src/util/geoserver'
 
 /**
  * Client for GeoServer REST API.
@@ -19,6 +19,20 @@ export { GeoServerResponseError } from './src/util/geoserver.js'
  * @module GeoServerRestClient
  */
 export class GeoServerRestClient {
+  private url: string;
+  private auth: string;
+
+  layers: LayerClient;
+  styles: StyleClient;
+  workspaces: WorkspaceClient;
+  namespaces: NamespaceClient;
+  datastores: DatastoreClient;
+  imagemosaics: ImageMosaicClient;
+  security: SecurityClient;
+  settings: SettingsClient;
+  about: AboutClient;
+  resetReload: ResetReloadClient;
+
   /**
    * Creates a GeoServerRestClient instance.
    *
@@ -26,7 +40,7 @@ export class GeoServerRestClient {
    * @param {String} user The user for the GeoServer REST API
    * @param {String} password The password for the GeoServer REST API
    */
-  constructor (url, user, password) {
+  constructor (url: string, user: string, password: string) {
     this.url = url.endsWith('/') ? url : url + '/';
     this.auth = 'Basic ' + Buffer.from(user + ':' + password).toString('base64');
 

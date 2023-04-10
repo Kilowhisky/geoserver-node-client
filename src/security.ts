@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
 
 /**
  * Client for GeoServer security.
@@ -7,13 +7,16 @@ import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserv
  * @module SecurityClient
  */
 export default class SecurityClient {
+  private url: string;
+  private auth: string;
+  
   /**
    * Creates a GeoServer REST SecurityClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -23,11 +26,10 @@ export default class SecurityClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with all users
+   * @returns {Promise<object>} An object with all users
    */
   async getAllUsers () {
     const response = await fetch(this.url + 'security/usergroup/users.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -49,7 +51,7 @@ export default class SecurityClient {
    *
    * @throws Error if request fails
    */
-  async createUser (username, password) {
+  async createUser (username: any, password: any) {
     const body = {
       user: {
         userName: username,
@@ -59,7 +61,6 @@ export default class SecurityClient {
     };
 
     const response = await fetch(this.url + 'security/usergroup/users.json', {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -89,7 +90,7 @@ export default class SecurityClient {
    *
    * @throws Error if request fails
    */
-  async updateUser (username, password, enabled) {
+  async updateUser (username: string, password: any, enabled: any) {
     const body = {
       user: {
         password: password,
@@ -98,7 +99,6 @@ export default class SecurityClient {
     };
 
     const response = await fetch(this.url + 'security/usergroup/user/' + username, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -121,9 +121,8 @@ export default class SecurityClient {
    *
    * @throws Error if request fails
    */
-  async associateUserRole (username, role) {
+  async associateUserRole (username: any, role: any) {
     const response = await fetch(`${this.url}security/roles/role/${role}/user/${username}`, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth

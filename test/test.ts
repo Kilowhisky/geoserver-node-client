@@ -1,7 +1,7 @@
 /* global describe:false, it:false, before:false, after:false */
 /* eslint-disable no-unused-expressions */
 import { expect } from 'chai';
-import { GeoServerRestClient } from '../geoserver-rest-client.js';
+import { GeoServerRestClient } from '../geoserver-rest-client';
 
 const url = 'http://localhost:8080/geoserver/rest/';
 const user = 'admin';
@@ -13,6 +13,7 @@ const workSpace = 'my-workspace';
 const nameSpace = 'my-namespace';
 const nameSpaceUri = 'http://www.example.com';
 
+// eslint-disable-next-line no-undef
 const geoServerVersion = process.env.GEOSERVER_VERSION;
 
 describe('About', () => {
@@ -22,7 +23,7 @@ describe('About', () => {
   });
 
   it('returns correct version', async () => {
-    const result = await grc.about.getVersion();
+    const result = await grc.about.getVersion() as any;
     expect(result.about.resource[0].Version).to.equal(geoServerVersion);
   })
 });
@@ -40,7 +41,7 @@ describe('Settings', () => {
   });
 
   it('returns settings object', async () => {
-    const settings = await grc.settings.getSettings();
+    const settings = await grc.settings.getSettings() as any;
     expect(settings).to.not.be.false;
     expect(settings.global.settings.charset).to.not.be.false;
   })
@@ -55,7 +56,7 @@ describe('Settings', () => {
     };
     await grc.settings.updateSettings(settingsJson);
 
-    const settings = await grc.settings.getSettings();
+    const settings = await grc.settings.getSettings() as any;
     expect(settings.global.settings.verbose).to.equal(settingsJson.global.settings.verbose);
   })
 
@@ -63,7 +64,7 @@ describe('Settings', () => {
     const url = 'http://foobar.de/geoserver';
     await grc.settings.updateProxyBaseUrl(url);
 
-    const settings = await grc.settings.getSettings();
+    const settings = await grc.settings.getSettings() as any;
     expect(settings.global.settings.proxyBaseUrl).to.equal(url);
   })
 
@@ -76,16 +77,16 @@ describe('Settings', () => {
     const address = 'Unter den Linden';
     const city = 'Berlin';
     const country = 'Deutschland';
-    const postalCode = 123445;
+    const postalCode = '123445';
     const state = 'Berlin';
     const email = 'example email address';
     const organization = 'A organization';
     const contactPerson = 'My contact persion';
-    const phoneNumber = 1231234234123;
+    const phoneNumber = '1231234234123';
 
     await grc.settings.updateContactInformation(address, city, country, postalCode, state, email, organization, contactPerson, phoneNumber);
 
-    const contactResponse = await grc.settings.getContactInformation();
+    const contactResponse = await grc.settings.getContactInformation() as any;
 
     // test two sample values
     expect(address).to.equal(contactResponse.contact.address);
@@ -95,7 +96,7 @@ describe('Settings', () => {
 
 describe('Workspace', () => {
   it('has no workspace', async () => {
-    const gsWorkspaces = await grc.workspaces.getAll();
+    const gsWorkspaces = await grc.workspaces.getAll() as any;
     expect(gsWorkspaces.workspaces).to.equal('');
   });
 
@@ -104,13 +105,13 @@ describe('Workspace', () => {
   });
 
   it('has one workspace', async () => {
-    const gsWorkspaces = await grc.workspaces.getAll();
+    const gsWorkspaces = await grc.workspaces.getAll() as any;
     expect(gsWorkspaces.workspaces.workspace.length).to.equal(1);
     expect(gsWorkspaces.workspaces.workspace[0].name).to.equal(workSpace);
   });
 
   it('query dedicated workspace', async () => {
-    const gsWorkspace = await grc.workspaces.get(workSpace);
+    const gsWorkspace = await grc.workspaces.get(workSpace) as any;
     expect(gsWorkspace.workspace.name).to.equal(workSpace);
 
     expect(
@@ -124,14 +125,14 @@ describe('Workspace', () => {
   });
 
   it('has no workspace', async () => {
-    const gsWorkspaces = await grc.workspaces.getAll();
+    const gsWorkspaces = await grc.workspaces.getAll() as any;
     expect(gsWorkspaces.workspaces).to.equal('');
   });
 });
 
 describe('Namespace', () => {
   it('has no namespaces', async () => {
-    const gsNamespaces = await grc.namespaces.getAll();
+    const gsNamespaces = await grc.namespaces.getAll() as any;
     expect(gsNamespaces.namespaces).to.equal('');
   });
 
@@ -140,13 +141,13 @@ describe('Namespace', () => {
   });
 
   it('has one namespace', async () => {
-    const gsNameSpaces = await grc.namespaces.getAll();
+    const gsNameSpaces = await grc.namespaces.getAll() as any;
     expect(gsNameSpaces.namespaces.namespace.length).to.equal(1);
     expect(gsNameSpaces.namespaces.namespace[0].name).to.equal(nameSpace);
   });
 
   it('query dedicated namespace', async () => {
-    const gsNameSpace = await grc.namespaces.get(nameSpace);
+    const gsNameSpace = await grc.namespaces.get(nameSpace) as any;
     expect(gsNameSpace.namespace.prefix).to.equal(nameSpace);
     expect(gsNameSpace.namespace.uri).to.equal(nameSpaceUri);
     expect(
@@ -159,7 +160,7 @@ describe('Namespace', () => {
   });
 
   it('has no namespace', async () => {
-    const gsNameSpaces = await grc.namespaces.getAll();
+    const gsNameSpaces = await grc.namespaces.getAll() as any;
     expect(gsNameSpaces.namespaces).to.equal('');
   });
 });
@@ -185,7 +186,7 @@ describe('Datastore', () => {
       workSpace, nameSpaceUri, dataStore, pgHost, pgPort, pgUser, pgPassword, pgSchema, pgDb, exposePk
     );
 
-    const result = await grc.datastores.getDataStore(workSpace, dataStore)
+    const result = await grc.datastores.getDataStore(workSpace, dataStore) as any
     expect(result.dataStore.name).equals(dataStore)
   });
 
@@ -253,19 +254,19 @@ describe('Datastore', () => {
   });
 
   it('can retrieve the data stores', async () => {
-    const result = await grc.datastores.getDataStores(workSpace);
+    const result = await grc.datastores.getDataStores(workSpace) as any;
     const dataStores = result.dataStores.dataStore;
     expect(dataStores.length).to.equal(3);
   });
 
   it('can retrieve the coverage stores', async () => {
-    const result = await grc.datastores.getCoverageStores(workSpace);
+    const result = await grc.datastores.getCoverageStores(workSpace) as any;
     const coverageStores = result.coverageStores.coverageStore;
     expect(coverageStores.length).to.equal(1);
   });
 
   it('can retrieve the WMS stores', async () => {
-    const result = await grc.datastores.getWmsStores(workSpace);
+    const result = await grc.datastores.getWmsStores(workSpace) as any;
     const wmsStores = result.wmsStores.wmsStore;
     expect(wmsStores.length).to.equal(1);
   });
@@ -338,12 +339,12 @@ describe('Layer', () => {
       'Sample Abstract'
     );
 
-    const result = await grc.layers.getFeatureType(workSpace, postGisDataStore, layerName);
+    const result = await grc.layers.getFeatureType(workSpace, postGisDataStore, layerName) as any;
     expect(result.featureType.name).equals(layerName);
   });
 
   it('can read information of a FeatureType', async () => {
-    const layerInfo = await grc.layers.getFeatureType(workSpace, wfsDataStore, featureLayerName);
+    const layerInfo = await grc.layers.getFeatureType(workSpace, wfsDataStore, featureLayerName) as any;
     expect(layerInfo.featureType.name).to.equal(featureLayerName);
   });
 
@@ -368,7 +369,7 @@ describe('Layer', () => {
       nativeBoundingBox
     );
 
-    const result = await grc.layers.getFeatureType(workSpace, wfsDataStore, ftName);
+    const result = await grc.layers.getFeatureType(workSpace, wfsDataStore, ftName) as any;
     expect(result.featureType.name).equals(ftName);
   });
 
@@ -398,14 +399,14 @@ describe('Layer', () => {
 
     await grc.layers.modifyAttribution(workSpace, wmsLayerName, attributionText, attributionLink);
 
-    const layerProperties = await grc.layers.get(workSpace, wmsLayerName);
+    const layerProperties = await grc.layers.get(workSpace, wmsLayerName) as any;
 
     expect(layerProperties.layer.attribution.title).to.equal(attributionText);
     expect(layerProperties.layer.attribution.href).to.equal(attributionLink);
   })
 
   it('can get retrieve all layers', async () => {
-    const result = await grc.layers.getAll();
+    const result = await grc.layers.getAll() as any;
     expect(result.layers.layer.length).to.equal(4);
   })
 
@@ -414,7 +415,7 @@ describe('Layer', () => {
     const nonExistentResult = await grc.layers.get(workSpace, nonExistentLayer);
     expect(nonExistentResult).to.be.undefined;
 
-    const result = await grc.layers.get(workSpace, wmsLayerName);
+    const result = await grc.layers.get(workSpace, wmsLayerName) as any;
     expect(result.layer.name).to.equal(wmsLayerName);
   })
 
@@ -441,17 +442,17 @@ describe('Layer', () => {
   });
 
   it('can get layers by workspace', async () => {
-    const result = await grc.layers.getLayers(workSpace);
+    const result = await grc.layers.getLayers(workSpace) as any;
     expect(result.layers.layer.length).to.equal(4);
   });
 
   it('works with non-existing workspaces', async () => {
-    const result = await grc.layers.getLayers('fantasy-workspace');
+    const result = await grc.layers.getLayers('fantasy-workspace') as any;
     expect(result.layers).to.equal('');
   });
 
   it('can get a WMS layer', async () => {
-    const result = await grc.layers.getWmsLayer(workSpace, wmsDataStore, wmsLayerName);
+    const result = await grc.layers.getWmsLayer(workSpace, wmsDataStore, wmsLayerName) as any;
     expect(result.wmsLayer.nativeName).to.equal(wmsNativeName);
   });
 
@@ -465,14 +466,14 @@ describe('Layer', () => {
     const nonExistentResult = await grc.layers.getCoverage(workSpace, rasterStoreName, nonExistentLayer);
     expect(nonExistentResult).to.be.undefined;
 
-    const result = await grc.layers.getCoverage(workSpace, rasterStoreName, rasterLayerName);
+    const result = await grc.layers.getCoverage(workSpace, rasterStoreName, rasterLayerName) as any;
     expect(result.coverage.name).to.equal(rasterLayerName);
   })
 
   it('can rename band names of a coverage', async () => {
     const bandNames = ['one', 'two', 'three', 'four'];
     await grc.layers.renameCoverageBands(workSpace, rasterStoreName, rasterLayerName, bandNames);
-    const result = await grc.layers.getCoverage(workSpace, rasterStoreName, rasterLayerName);
+    const result = await grc.layers.getCoverage(workSpace, rasterStoreName, rasterLayerName) as any;
     const bandResult = result.coverage.dimensions.coverageDimension;
     expect(bandResult.length).to.equal(4);
     expect(bandResult[3].name).to.equal(bandNames[3]);
@@ -539,12 +540,12 @@ describe('Style', () => {
 
     // case: style shall **not** be default style
     const isDefaultStyle = false;
-    const layerInfo1 = await grc.layers.get(workSpace, featureLayerName)
+    const layerInfo1 = await grc.layers.get(workSpace, featureLayerName) as any
     const defaultStyleNameBefore = layerInfo1.layer.defaultStyle.name;
 
     await grc.styles.assignStyleToLayer(workSpace, featureLayerName, workspaceStyle, styleName, isDefaultStyle);
 
-    const layerInfo2 = await grc.layers.get(workSpace, featureLayerName)
+    const layerInfo2 = await grc.layers.get(workSpace, featureLayerName) as any
     const defaultStyleNameAfter = layerInfo2.layer.defaultStyle.name;
     // we check if the default style of before has not changed
     expect(defaultStyleNameBefore).to.equal(defaultStyleNameAfter);
@@ -568,7 +569,7 @@ describe('Style', () => {
     // case: style shall be default style (default behavior)
     await grc.styles.assignStyleToLayer(workSpace, featureLayerName, workspaceStyle, styleName);
 
-    const layerInfo3 = await grc.layers.get(workSpace, featureLayerName)
+    const layerInfo3 = await grc.layers.get(workSpace, featureLayerName) as any
     const changedDefaultStyleName = layerInfo3.layer.defaultStyle.name;
     // we check if the default style got updated
     expect(changedDefaultStyleName).to.equal(inputStyleQualifiedName);

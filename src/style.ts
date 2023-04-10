@@ -1,7 +1,7 @@
-import fetch from 'node-fetch';
-import WorkspaceClient from './workspace.js';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
-import AboutClient from './about.js'
+import fetch, { RequestInfo } from 'node-fetch';
+import WorkspaceClient from './workspace';
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
+import AboutClient from './about'
 
 /**
  * Client for GeoServer styles
@@ -9,13 +9,16 @@ import AboutClient from './about.js'
  * @module StyleClient
  */
 export default class StyleClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST StyleClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor(url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -25,11 +28,10 @@ export default class StyleClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with the default styles
+   * @returns {Promise<Object>} An object with the default styles
    */
-  async getDefaults () {
+  async getDefaults() {
     const response = await fetch(this.url + 'styles.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -50,11 +52,10 @@ export default class StyleClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with all styles
+   * @returns {Promise<Object>} An object with all styles
    */
-  async getInWorkspace (workspace) {
+  async getInWorkspace(workspace: string) {
     const response = await fetch(this.url + 'workspaces/' + workspace + '/styles.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -73,12 +74,12 @@ export default class StyleClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object[]} An array with all style objects
+   * @returns {Promise<Object[]>} An array with all style objects
    */
-  async getAllWorkspaceStyles () {
+  async getAllWorkspaceStyles() {
     const allStyles = [];
     const ws = new WorkspaceClient(this.url, this.auth);
-    const allWs = await ws.getAll();
+    const allWs = await ws.getAll() as any;
 
     if (!allWs ||
       !allWs.workspaces ||
@@ -93,7 +94,7 @@ export default class StyleClient {
       const wsStyles = await this.getInWorkspace(ws.name);
 
       if (wsStyles.styles.style) {
-        wsStyles.styles.style.forEach(wsStyle => {
+        wsStyles.styles.style.forEach((wsStyle: any) => {
           allStyles.push(wsStyle);
         });
       }
@@ -106,9 +107,9 @@ export default class StyleClient {
    * Returns all styles as combined object (default ones and those in
    * workspaces).
    *
-   * @returns {Object[]} An array with all style objects
+   * @returns {Promise<Object[]>} An array with all style objects
    */
-  async getAll () {
+  async getAll() {
     const defaultStyles = await this.getDefaults();
     const wsStyles = await this.getAllWorkspaceStyles();
     if (
@@ -133,9 +134,8 @@ export default class StyleClient {
    *
    * @throws Error if request fails
    */
-  async publish (workspace, name, sldBody) {
+  async publish(workspace: string, name: string, sldBody: any) {
     const response = await fetch(this.url + 'workspaces/' + workspace + '/styles?name=' + name, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -158,7 +158,7 @@ export default class StyleClient {
    * @param {Boolean} [recurse=false] If references to the specified style in existing layers should be deleted
    * @param {Boolean} [purge=false] Whether the underlying file containing the style should be deleted on disk
    */
-  async delete (workspace, name, recurse, purge) {
+  async delete(workspace: string, name: string, recurse: boolean, purge: boolean) {
     let paramPurge = false;
     let paramRecurse = false;
 
@@ -169,20 +169,19 @@ export default class StyleClient {
       paramRecurse = true;
     }
 
-    let endpoint;
+    let endpoint: RequestInfo;
 
     if (workspace) {
       // delete style inside workspace
       endpoint = this.url + 'workspaces/' + workspace + '/styles/' + name +
-                  '?' + 'purge=' + paramPurge + '&' + 'recurse=' + paramRecurse;
+        '?' + 'purge=' + paramPurge + '&' + 'recurse=' + paramRecurse;
     } else {
       // delete style without workspace
       endpoint = this.url + 'styles/' + name +
-                  '?' + 'purge=' + paramPurge + '&' + 'recurse=' + paramRecurse;
+        '?' + 'purge=' + paramPurge + '&' + 'recurse=' + paramRecurse;
     }
 
     const response = await fetch(endpoint, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth
@@ -214,8 +213,8 @@ export default class StyleClient {
    *
    * @throws Error if request fails
    */
-  async assignStyleToLayer (workspaceOfLayer, layerName, workspaceOfStyle, styleName, isDefaultStyle) {
-    let qualifiedName;
+  async assignStyleToLayer(workspaceOfLayer: string, layerName: string, workspaceOfStyle: string, styleName: string, isDefaultStyle = true) {
+    let qualifiedName: string;
     if (workspaceOfLayer) {
       qualifiedName = `${workspaceOfLayer}:${layerName}`;
     } else {
@@ -223,16 +222,15 @@ export default class StyleClient {
     }
     const styleBody = await this.getStyleInformation(workspaceOfStyle, styleName);
 
-    let url;
+    let url: RequestInfo;
     // we set the style as defaultStyle, unless user explicitly provides 'false'
-    if (isDefaultStyle !== false) {
+    if (isDefaultStyle) {
       url = this.url + 'layers/' + qualifiedName + '/styles?default=true';
     } else {
       url = this.url + 'layers/' + qualifiedName + '/styles';
     }
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -257,8 +255,8 @@ export default class StyleClient {
    *
    * @returns {Object} An object about the style or undefined if it cannot be found
    */
-  async getStyleInformation (workspace, styleName) {
-    let url;
+  async getStyleInformation(workspace: string, styleName: string) {
+    let url: RequestInfo;
     if (workspace) {
       url = this.url + 'workspaces/' + workspace + '/styles/' + styleName + '.json';
     } else {
@@ -266,7 +264,6 @@ export default class StyleClient {
     }
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth

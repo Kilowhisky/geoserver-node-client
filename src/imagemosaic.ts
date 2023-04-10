@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
 
 /**
  * Client for GeoServer image mosaics
@@ -7,13 +7,16 @@ import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserv
  * @module ImageMosaicClient
  */
 export default class ImageMosaicClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST ImageMosaicClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -27,13 +30,12 @@ export default class ImageMosaicClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with the granules
+   * @returns {Promise<Object>} An object with the granules
    */
-  async getGranules (workspace, coverageStore, coverage) {
+  async getGranules (workspace: string, coverageStore: string, coverage: string): Promise<object> {
     const url = this.url + 'workspaces/' + workspace + '/coveragestores/' +
         coverageStore + '/coverages/' + coverage + '/index/granules.json';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth,
@@ -58,13 +60,12 @@ export default class ImageMosaicClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with the granules
+   * @returns {Promise<Object>} An object with the granules
    */
-  async harvestGranules (workspace, coverageStore, filePath) {
+  async harvestGranules (workspace: string, coverageStore: string, filePath: any): Promise<object> {
     const url = this.url + 'workspaces/' + workspace + '/coveragestores/' + coverageStore + '/external.imagemosaic';
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -90,11 +91,10 @@ export default class ImageMosaicClient {
    *
    * @throws Error if request fails
    */
-  async addGranuleByServerFile (workspace, coverageStore, filePath) {
+  async addGranuleByServerFile (workspace: string, coverageStore: string, filePath: any) {
     const url = this.url + 'workspaces/' + workspace + '/coveragestores/' + coverageStore + '/external.imagemosaic';
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -119,12 +119,11 @@ export default class ImageMosaicClient {
    *
    * @throws Error if request fails
    */
-  async deleteSingleGranule (workspace, coverageStore, coverage, covFileLocation) {
+  async deleteSingleGranule (workspace: string, coverageStore: string, coverage: string, covFileLocation: string) {
     let url = this.url + 'workspaces/' + workspace + '/coveragestores/' + coverageStore + '/coverages/' + coverage + '/index/granules.xml';
     url += '?filter=location=\'' + covFileLocation + '\'';
 
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth,

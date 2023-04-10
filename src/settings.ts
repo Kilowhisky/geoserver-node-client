@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
 
 /**
  * Client for GeoServer settings.
@@ -7,13 +7,16 @@ import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserv
  * @module SettingsClient
  */
 export default class SettingsClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST SettingsClient instance.
    *
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -23,11 +26,10 @@ export default class SettingsClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} Settings object
+   * @returns {Promise<Object>} Settings object
    */
-  async getSettings () {
+  async getSettings (): Promise<object> {
     const response = await fetch(this.url + 'settings.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -45,9 +47,8 @@ export default class SettingsClient {
    *
    * @param {Object} settings The adapted GeoServer settings object
    */
-  async updateSettings (settings) {
+  async updateSettings (settings: object) {
     const response = await fetch(this.url + 'settings', {
-      credentials: 'include',
       method: 'PUT',
       headers: {
         Authorization: this.auth,
@@ -67,8 +68,8 @@ export default class SettingsClient {
    *
    * @param {String} proxyBaseUrl The proxy base URL
    */
-  async updateProxyBaseUrl (proxyBaseUrl) {
-    const settingsJson = await this.getSettings();
+  async updateProxyBaseUrl (proxyBaseUrl: string) {
+    const settingsJson = await this.getSettings() as any;
 
     // check if settings are correctly formatted
     if (!settingsJson.global && !settingsJson.global.settings) {
@@ -86,11 +87,10 @@ export default class SettingsClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object with contact information
+   * @returns {Promise<Object>} An object with contact information
    */
-  async getContactInformation () {
+  async getContactInformation (): Promise<object> {
     const response = await fetch(this.url + 'settings/contact', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -120,7 +120,7 @@ export default class SettingsClient {
    *
    * @throws Error if request fails
    */
-  async updateContactInformation (address, city, country, postalCode, state, email, organization, contactPerson, phoneNumber) {
+  async updateContactInformation (address: string, city: string, country: string, postalCode: string, state: string, email: string, organization: string, contactPerson: string, phoneNumber: string) {
     const contact = {
       address: address,
       addressCity: city,
@@ -139,7 +139,6 @@ export default class SettingsClient {
 
     const url = this.url + 'settings/contact';
     const response = await fetch(url, {
-      credentials: 'include',
       method: 'PUT',
       headers: {
         Authorization: this.auth,

@@ -1,3 +1,5 @@
+import { Response } from "node-fetch";
+
 /**
  * Utility functions and classes
  */
@@ -7,9 +9,9 @@
  *
  * @param {Response} response The response of the GeoServer
  *
- * @returns {String} The response text if available
+ * @returns {Promise<string>} The response text if available
  */
-async function getGeoServerResponseText (response) {
+async function getGeoServerResponseText (response: Response): Promise<string> {
   try {
     return response.text()
   } catch (e) {
@@ -21,11 +23,13 @@ async function getGeoServerResponseText (response) {
  * Generic GeoServer error
  */
 class GeoServerResponseError extends Error {
+  geoServerOutput?: string;
+
   /**
    * @param {String} [message=GeoServer Response Error] The error message
    * @param {String} [geoServerOutput] The error output from GeoServer (useful for debugging)
    */
-  constructor (message, geoServerOutput) {
+  constructor (message: string, geoServerOutput?: string) {
     super(message)
     this.name = 'GeoServerResponseError';
     this.message = message || 'GeoServer Response Error'

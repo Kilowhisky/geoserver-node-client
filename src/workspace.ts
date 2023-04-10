@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver.js';
-import AboutClient from './about.js'
+import { getGeoServerResponseText, GeoServerResponseError } from './util/geoserver';
+import AboutClient from './about'
 
 /**
  * Client for GeoServer workspaces
@@ -8,6 +8,9 @@ import AboutClient from './about.js'
  * @module WorkspaceClient
  */
 export default class WorkspaceClient {
+  private url: string;
+  private auth: string;
+
   /**
    * Creates a GeoServer REST WorkspaceClient instance.
    *
@@ -16,7 +19,7 @@ export default class WorkspaceClient {
    * @param {String} url The URL of the GeoServer REST API endpoint
    * @param {String} auth The Basic Authentication string
    */
-  constructor (url, auth) {
+  constructor (url: string, auth: string) {
     this.url = url;
     this.auth = auth;
   }
@@ -26,11 +29,10 @@ export default class WorkspaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An Object describing the workspaces
+   * @returns {Promise<Object>} An Object describing the workspaces
    */
-  async getAll () {
+  async getAll (): Promise<object> {
     const response = await fetch(this.url + 'workspaces.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -50,11 +52,10 @@ export default class WorkspaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {Object} An object describing the workspaces
+   * @returns {Promise<Object>} An object describing the workspaces
    */
-  async get (name) {
+  async get (name: string): Promise<object> {
     const response = await fetch(this.url + 'workspaces/' + name + '.json', {
-      credentials: 'include',
       method: 'GET',
       headers: {
         Authorization: this.auth
@@ -81,9 +82,9 @@ export default class WorkspaceClient {
    *
    * @throws Error if request fails
    *
-   * @returns {String} The name of the created workspace
+   * @returns {Promise<String>} The name of the created workspace
    */
-  async create (name) {
+  async create (name: string): Promise<string> {
     const body = {
       workspace: {
         name: name
@@ -91,7 +92,6 @@ export default class WorkspaceClient {
     };
 
     const response = await fetch(this.url + 'workspaces', {
-      credentials: 'include',
       method: 'POST',
       headers: {
         Authorization: this.auth,
@@ -121,9 +121,8 @@ export default class WorkspaceClient {
    *
    * @throws Error if request fails
    */
-  async delete (name, recurse) {
+  async delete (name: string, recurse: boolean) {
     const response = await fetch(this.url + 'workspaces/' + name + '?recurse=' + recurse, {
-      credentials: 'include',
       method: 'DELETE',
       headers: {
         Authorization: this.auth
